@@ -83,6 +83,31 @@ namespace AsyncAcademyTest
             return testCourse.Id; // Return the ID of the created course for testing
         }
 
+        // The chart includes every submission only when the signed-in user is an instructor.
+        // Seed this user first so identity 1 matches MockSessionValues and Course.InstructorId.
+        private async Task<int> SeedInstructor(AsyncAcademyContext context)
+        {
+            var instructor = new User
+            {
+                Addr_City = "Irrelevant City",
+                Addr_State = "UT",
+                Addr_Street = "Irrelevant Rd.",
+                Addr_Zip = "12345",
+                Birthday = new DateTime(1980, 1, 1),
+                ConfirmPass = "pass",
+                FirstName = "Test",
+                LastName = "Instructor",
+                IsProfessor = true,
+                Mail = "instructor@test.com",
+                Pass = "pass",
+                Phone = "8018018018",
+                Username = "instructor"
+            };
+            context.Users.Add(instructor);
+            await context.SaveChangesAsync();
+            return instructor.Id;
+        }
+
         // Helper method to seed database with students
         private async Task<List<int>> SeedStudents(AsyncAcademyContext context)
         {
@@ -206,8 +231,9 @@ namespace AsyncAcademyTest
         {
             using (var context = new AsyncAcademyContext(_dbContextOptions))
             {
+                int instructorId = await SeedInstructor(context);
                 int courseId = await SeedCourse(context); // Seed a course for testing
-                MockSessionValues(1); // Mock session data for instructor
+                MockSessionValues(instructorId); // Mock session data for instructor
                 List<int> studentIds = await SeedStudents(context);
                 List<int> enrollmentIds = await SeedEnrollments(context, courseId, studentIds);
                 int assignmentId = await SeedAssignment(context, courseId);
@@ -258,8 +284,8 @@ namespace AsyncAcademyTest
                 Assert.AreEqual(CorrectNumB, Model.numB);
                 Assert.AreEqual(CorrectNumC, Model.numC);
                 Assert.AreEqual(CorrectNumD, Model.numD);
-                //Assert.AreEqual(CorrectNumF, Model.numF); //kevin commented this out so that the project could build successfully
-                //Assert.AreEqual(CorrectNumUG, Model.numUG); //kevin commented this out so that the project could build successfully
+                Assert.AreEqual(CorrectNumF, Model.numF);
+                Assert.AreEqual(CorrectNumUG, Model.numUG);
             }
         }
     }

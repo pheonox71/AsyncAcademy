@@ -56,6 +56,29 @@ namespace AsyncAcademyTest
             }
         }
 
+        private async Task<int> SeedInstructor(AsyncAcademyContext context)
+        {
+            var instructor = new User
+            {
+                Addr_City = "Irrelevant City",
+                Addr_State = "UT",
+                Addr_Street = "Irrelevant Rd.",
+                Addr_Zip = "12345",
+                Birthday = new DateTime(1980, 1, 1),
+                ConfirmPass = "pass",
+                FirstName = "Test",
+                LastName = "Instructor",
+                IsProfessor = true,
+                Mail = "instructor@test.com",
+                Pass = "pass",
+                Phone = "8018018018",
+                Username = "instructor"
+            };
+            context.Users.Add(instructor);
+            await context.SaveChangesAsync();
+            return instructor.Id;
+        }
+
         private async Task<int> SeedSubmission(AsyncAcademyContext context)
         {
             var testSubmission = new Submission
@@ -119,8 +142,9 @@ namespace AsyncAcademyTest
         {
             using (var context = new AsyncAcademyContext(_dbContextOptions))
             {
+                int instructorId = await SeedInstructor(context);
                 int submissionId = await SeedSubmission(context);
-                MockSessionValues(1, submissionId);
+                MockSessionValues(instructorId, submissionId);
                 await VerifyGradeCreation(context, submissionId);
             }
         }
