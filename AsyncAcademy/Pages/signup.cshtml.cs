@@ -44,21 +44,22 @@ namespace AsyncAcademy.Pages
                 return Page();
             }
 
+            // Save the user first so the identity value exists before the payment row references it.
+            _context.Users.Add(Account);
+            await _context.SaveChangesAsync();
+
             if (!Account.IsProfessor)  // Only for students -> We will create an entry in StudentPayment table
             {
                 var newStudentPayment = new Payment
                 {
-                    UserId = Account.Id,    
-                    AmountPaid = 0,          // No classes signed up yet 
+                    UserId = Account.Id,
+                    AmountPaid = 0,          // No classes signed up yet
                     Timestamp = DateTime.Now
                 };
 
                 _context.Payments.Add(newStudentPayment);
                 await _context.SaveChangesAsync();
             }
-
-            _context.Users.Add(Account);
-            await _context.SaveChangesAsync();
 
             HttpContext.Session.SetInt32("CurrentUserId", Account.Id);
             return RedirectToPage("./welcome");
