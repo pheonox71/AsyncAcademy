@@ -10,8 +10,20 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews();
+
+// Connection string comes from configuration (appsettings placeholder, user secrets, or
+// ConnectionStrings__TITAN-CONNECTION-STRING). The committed placeholder is not a real login.
+var connectionString = builder.Configuration.GetConnectionString("TITAN-CONNECTION-STRING");
+if (string.IsNullOrWhiteSpace(connectionString) ||
+    connectionString.Contains("YOUR_SQL_USER", StringComparison.Ordinal) ||
+    connectionString.Contains("YOUR_SQL_PASSWORD", StringComparison.Ordinal))
+{
+    throw new InvalidOperationException(
+        "Connection string 'TITAN-CONNECTION-STRING' is not set. Set ConnectionStrings:TITAN-CONNECTION-STRING with user secrets or the ConnectionStrings__TITAN-CONNECTION-STRING environment variable.");
+}
+
 builder.Services.AddDbContext<AsyncAcademyContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("TITAN-CONNECTION-STRING") ?? throw new InvalidOperationException("Connection string 'TITAN-CONNECTION-STRING' not found.")));
+    options.UseSqlServer(connectionString));
 
 // From Bash
 builder.Services.AddSession(options =>
@@ -22,8 +34,16 @@ builder.Services.AddSession(options =>
 });
 //
 
-// Configure Stripe using secret key
-StripeConfiguration.ApiKey = "sk_test_51Q2OkdLffhLXA6EXPrfKh0VcjFq9OydxjlpNAE9tAFVygmAWLSrmKYjjwo2HliwAIicTtxat7XS5OLqAEMw1Ooce00JpCHPLkh";  // Secret key
+// Stripe test key comes from configuration (user secrets Stripe:SecretKey, or Stripe__SecretKey).
+var stripeSecretKey = builder.Configuration["Stripe:SecretKey"];
+if (string.IsNullOrWhiteSpace(stripeSecretKey) ||
+    stripeSecretKey.Contains("your_key_here", StringComparison.OrdinalIgnoreCase))
+{
+    throw new InvalidOperationException(
+        "Stripe secret key is not set. Set Stripe:SecretKey with user secrets or the Stripe__SecretKey environment variable.");
+}
+
+StripeConfiguration.ApiKey = stripeSecretKey;
 
 
 

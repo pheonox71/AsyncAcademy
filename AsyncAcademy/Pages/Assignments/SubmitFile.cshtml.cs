@@ -221,6 +221,11 @@ namespace AsyncAcademy.Pages.Assignments
 
                 //saves to wwwroot/submissions
                 string filePath = _environment.WebRootPath + dbPath;
+                var submissionsDirectory = Path.GetDirectoryName(filePath);
+                if (!string.IsNullOrEmpty(submissionsDirectory))
+                {
+                    Directory.CreateDirectory(submissionsDirectory);
+                }
                 using (var fileStream = new FileStream(filePath, FileMode.Create))
                 {
                     await FileSubmission.CopyToAsync(fileStream);

@@ -1,0 +1,2 @@
+# Keeps wwwroot/submissions in the repository so file uploads have a destination.
+# Do not commit student submission files.
